@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RTSP Stream Viewer</title>
+</head>
+<body>
+    <h2>RTSP Stream Viewer</h2>
+    <input type="text" id="rtsp-url" value="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov" />
+    <button onclick="startStream()">Start Stream</button>
+    <br><br>
+    <img id="stream-img" width="640" alt="Stream will appear here" />
+    <script>
+        let socket;
+
+        function startStream() {
+            const url = document.getElementById("rtsp-url").value;
+            socket = new WebSocket("ws://" + window.location.host + "/ws/stream/");
+
+            socket.onopen = () => {
+                socket.send(JSON.stringify({ url }));
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.image) {
+                    document.getElementById("stream-img").src = "data:image/jpeg;base64," + data.image;
+                }
+            };
+
+            socket.onerror = (error) => {
+                console.error("WebSocket error:", error);
+            };
+        }
+    </script>
+</body>
+</html>
